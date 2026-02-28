@@ -458,9 +458,6 @@
         </div>
 
         <div class="est-yield" id="estYield" style="display: none;">
-            <div class="est-yield-label">Your estimated yearly earnings</div>
-            <div class="est-yield-value" id="estYieldValue">$0</div>
-            <div class="est-yield-sub" id="estYieldSub">Based on top yield</div>
         </div>
 
         <div class="results-section">
@@ -572,48 +569,45 @@
         }
 
         function getDepositUrl(pool) {
-            // FIRST: Use the direct pool URL from API if available
+            // Use the direct pool URL from API if available
             if (pool.url) return pool.url;
             if (pool.pool_url) return pool.pool_url;
             
-            // SECOND: Construct direct links based on project + chain
             const project = pool.project?.toLowerCase() || '';
             const chain = pool.chain?.toLowerCase() || '';
             const symbol = pool.symbol?.toUpperCase() || '';
             
-            // Specific project URLs
-            if (project.includes('aave')) return 'https://app.aave.com/markets';
-            if (project.includes('morpho')) return 'https://app.morpho.org';
-            if (project.includes('compound')) return 'https://app.compound.finance';
-            if (project.includes('uniswap')) return `https://app.uniswap.org/explore/${chain === 'base' ? 'base' : chain === 'arbitrum' ? 'arbitrum-one' : 'optimism'}`;
-            if (project.includes('curve')) return 'https://curve.fi';
-            if (project.includes('yearn')) return 'https://yearn.finance';
-            if (project.includes('aerodrome')) return 'https://aerodrome.finance';
-            if (project.includes('velodrome')) return 'https://app.velodrome.finance';
-            if (project.includes('balancer')) return 'https://app.balancer.fi';
-            if (project.includes('ethena')) return 'https://app.ethena.fi';
+            // Protocol-specific stablecoin pages
+            if (project.includes('aave')) {
+                if (chain === 'ethereum') return 'https://app.aave.com/markets?marketName=proto_eth_v3';
+                if (chain === 'base') return 'https://app.aave.com/markets?marketName=proto_base_v3';
+                if (chain === 'arbitrum') return 'https://app.aave.com/markets?marketName=proto_arb_v3';
+                return 'https://app.aave.com/markets';
+            }
+            if (project.includes('morpho')) return 'https://app.morpho.org/#/markets';
+            if (project.includes('compound')) return 'https://app.compound.finance/supply';
+            if (project.includes('ethena') || project.includes('ethena')) return 'https://app.ethena.fi';
             if (project.includes('lido')) return 'https://stake.lido.fi';
+            if (project.includes('spark')) return 'https://app.spark.fi/savings/mainnet';
+            if (project.includes('sky') || symbol === 'SUSDS') return 'https://sky.money';
+            if (project.includes('frax') || symbol.includes('FRAX')) return 'https://app.frax.finance/staking';
+            if (project.includes('sfrx')) return 'https://www.fraxfinance.com/staking/sfrxeth';
             if (project.includes('rocket')) return 'https://stake.rocketpool.net';
-            if (project.includes('ether')) return 'https://ether.fi/staking';
+            if (project.includes('ether') || project.includes('ether.fi')) return 'https://ether.fi/staking';
             if (project.includes('renzo')) return 'https://app.renzo.io';
             if (project.includes('kelp')) return 'https://www.kelpdao.xyz';
-            if (project.includes('spark')) return 'https://app.spark.fi';
-            if (project.includes('sky')) return 'https://sky.money';
-            if (project.includes('silo')) return 'https://app.silo.finance';
-            if (project.includes('gearbox')) return 'https://app.gearbox.fi';
-            if (project.includes('euler')) return 'https://app.euler.finance';
-            if (project.includes('maple')) return 'https://app.maple.finance';
-            if (project.includes('yo')) return 'https://yoprotocol.io';
-            if (project.includes('sfrx')) return 'https://www.fraxfinance.com/staking';
-            if (project.includes('frax')) return 'https://app.frax.finance';
             if (project.includes('stader')) return 'https://staderlabs.com/eth';
             if (project.includes('swell')) return 'https://swellnetwork.io/staking';
+            if (project.includes('silo')) return 'https://app.silo.finance';
+            if (project.includes('yearn')) return 'https://yearn.finance/#/vaults';
+            if (project.includes('gearbox')) return 'https://app.gearbox.fi';
+            if (project.includes('euler')) return 'https://app.euler.finance';
+            if (project.includes('maple')) return 'https://app.maple.finance/#/lend';
             
-            // Chain-specific Aave fallback
+            // Default to Aave markets
+            if (chain === 'ethereum') return 'https://app.aave.com/markets?marketName=proto_eth_v3';
             if (chain === 'base') return 'https://app.aave.com/markets?marketName=proto_base_v3';
             if (chain === 'arbitrum') return 'https://app.aave.com/markets?marketName=proto_arb_v3';
-            if (chain === 'optimism') return 'https://app.aave.com/markets?marketName=proto_opt_v3';
-            
             return 'https://app.aave.com/markets';
         }
         function getFilteredPools() {
@@ -645,8 +639,7 @@
                     
                     if (!isLending && !pool.stablecoin) return false;
                     
-                    // Must have positive APY
-                    if (!pool.apy || pool.apy <= 0) return false;
+                    // Just show all pools, no APY filter needed
                     
                     return true;
                 })
@@ -698,7 +691,7 @@
                 <div class="yield-row header">
                     <div>Protocol</div>
                     <div>Chain</div>
-                    <div>APY</div>
+                    <div>Action</div>
                     <div>Risk</div>
                     <div>Action</div>
                 </div>
@@ -725,13 +718,13 @@
                             <span class="chain-badge ${pool.chain.toLowerCase()}">${pool.chain}</span>
                         </div>
                         <div>
-                            <span class="apy-value ${pool.apy > 5 ? 'high' : ''}">${(pool.apyBase || pool.apy).toFixed(2)}%${pool.apyReward && pool.apyReward > 0 ? ' <span title="Total including rewards">(+' + pool.apyReward.toFixed(2) + '%)</span>' : ''}</span>
+                            <span class="apy-value">Check Rates →</span>
                         </div>
                         <div>
                             <span class="risk-badge ${pool.risk}">${pool.risk}</span>
                         </div>
                         <a href="${getDepositUrl(pool)}" target="_blank" rel="noopener" class="deposit-btn">
-                            Deposit →
+                            Check Rates →
                         </a>
                     </div>
                 `;
