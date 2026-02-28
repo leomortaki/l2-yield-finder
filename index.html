@@ -573,22 +573,37 @@
 
         function getDepositUrl(pool) {
             // FIRST: Use the direct pool URL from API if available
-            if (pool.url) {
-                return pool.url;
-            }
-            if (pool.pool_url) {
-                return pool.pool_url;
-            }
-            // SECOND: Use our protocol mapping
-            if (protocolInfo[pool.project]?.url) {
-                return protocolInfo[pool.project].url;
-            }
-            // THIRD: Chain-specific defaults
+            if (pool.url) return pool.url;
+            if (pool.pool_url) return pool.pool_url;
+            
+            // SECOND: Construct direct links based on project + chain
+            const project = pool.project?.toLowerCase() || '';
             const chain = pool.chain?.toLowerCase() || '';
-            if (chain === 'base') return 'https://app.aave.com';
-            if (chain === 'arbitrum') return 'https://app.aave.com';
-            if (chain === 'optimism') return 'https://app.aave.com';
-            return 'https://app.aave.com';
+            const symbol = pool.symbol?.toUpperCase() || '';
+            
+            // Specific project URLs
+            if (project.includes('aave')) return 'https://app.aave.com/markets';
+            if (project.includes('morpho')) return 'https://app.morpho.org';
+            if (project.includes('compound')) return 'https://app.compound.finance';
+            if (project.includes('uniswap')) return `https://app.uniswap.org/explore/${chain === 'base' ? 'base' : chain === 'arbitrum' ? 'arbitrum-one' : 'optimism'}`;
+            if (project.includes('curve')) return 'https://curve.fi';
+            if (project.includes('yearn')) return 'https://yearn.finance';
+            if (project.includes('aerodrome')) return 'https://aerodrome.finance';
+            if (project.includes('velodrome')) return 'https://app.velodrome.finance';
+            if (project.includes('balancer')) return 'https://app.balancer.fi';
+            if (project.includes('ethena')) return 'https://app.ethena.fi';
+            if (project.includes('lido')) return 'https://stake.lido.fi';
+            if (project.includes('rocket')) return 'https://stake.rocketpool.net';
+            if (project.includes('ether')) return 'https://ether.fi/staking';
+            if (project.includes('renzo')) return 'https://app.renzo.io';
+            if (project.includes('kelp')) return 'https://www.kelpdao.xyz';
+            
+            // Chain-specific Aave fallback
+            if (chain === 'base') return 'https://app.aave.com/markets?marketName=proto_base_v3';
+            if (chain === 'arbitrum') return 'https://app.aave.com/markets?marketName=proto_arb_v3';
+            if (chain === 'optimism') return 'https://app.aave.com/markets?marketName=proto_opt_v3';
+            
+            return 'https://app.aave.com/markets';
         }
         function getFilteredPools() {
             const targetChains = ['Base', 'Arbitrum', 'Optimism'];
