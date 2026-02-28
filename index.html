@@ -572,26 +572,22 @@
         }
 
         function getDepositUrl(pool) {
-            // If we have a direct URL, use it
+            // FIRST: Use the direct pool URL from API if available
+            if (pool.url) {
+                return pool.url;
+            }
+            if (pool.pool_url) {
+                return pool.pool_url;
+            }
+            // SECOND: Use our protocol mapping
             if (protocolInfo[pool.project]?.url) {
                 return protocolInfo[pool.project].url;
             }
-            // Otherwise, use chain-specific fallback URLs
+            // THIRD: Chain-specific defaults
             const chain = pool.chain?.toLowerCase() || '';
-            const symbol = pool.symbol?.toUpperCase() || '';
-            
-            // DEX URLs for liquidity pools
-            if (pool.project?.includes('uniswap') || pool.project?.includes('curve')) {
-                if (chain === 'base') return 'https://uniswap.org';
-                if (chain === 'arbitrum') return 'https://uniswap.org';
-                if (chain === 'optimism') return 'https://uniswap.org';
-            }
-            
-            // Lending protocol fallbacks
             if (chain === 'base') return 'https://app.aave.com';
             if (chain === 'arbitrum') return 'https://app.aave.com';
             if (chain === 'optimism') return 'https://app.aave.com';
-            
             return 'https://app.aave.com';
         }
         function getFilteredPools() {
