@@ -725,7 +725,7 @@
                             <span class="chain-badge ${pool.chain.toLowerCase()}">${pool.chain}</span>
                         </div>
                         <div>
-                            <span class="apy-value ${pool.apy > 5 ? 'high' : ''}">${pool.apy.toFixed(2)}%</span>
+                            <span class="apy-value ${pool.apy > 5 ? 'high' : ''}">${(pool.apyBase || pool.apy).toFixed(2)}%${pool.apyReward && pool.apyReward > 0 ? ' <span title="Total including rewards">(+' + pool.apyReward.toFixed(2) + '%)</span>' : ''}</span>
                         </div>
                         <div>
                             <span class="risk-badge ${pool.risk}">${pool.risk}</span>
