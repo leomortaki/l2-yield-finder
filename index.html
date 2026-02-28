@@ -696,7 +696,7 @@
                         <div>
                             <span class="risk-badge ${pool.risk}">${pool.risk}</span>
                         </div>
-                        <a href="${protocolInfo[pool.project]?.url || '#'}" target="_blank" rel="noopener" class="deposit-btn">
+                        <a href="${getDepositUrl(pool)}" target="_blank" rel="noopener" class="deposit-btn">
                             Deposit →
                         </a>
                     </div>
