@@ -450,9 +450,9 @@
             <div class="filter-chains">
                 <div class="filter-chips">
                     <span class="chain-chip active" data-chain="all">All Chains</span>
+                    <span class="chain-chip" data-chain="Ethereum">Ethereum</span>
                     <span class="chain-chip" data-chain="Base">Base</span>
                     <span class="chain-chip" data-chain="Arbitrum">Arbitrum</span>
-                    <span class="chain-chip" data-chain="Optimism">Optimism</span>
                 </div>
             </div>
         </div>
@@ -617,21 +617,33 @@
             return 'https://app.aave.com/markets';
         }
         function getFilteredPools() {
-            const targetChains = ['Base', 'Arbitrum', 'Optimism'];
+            // Chains: Ethereum (L1), Base, Arbitrum only
+            const targetChains = ['Ethereum', 'Base', 'Arbitrum'];
             
             return allPools
                 .filter(pool => {
                     // Filter by chain
                     if (currentChain !== 'all' && pool.chain !== currentChain) return false;
                     
-                    // For 'all' show L2s only
+                    // For 'all' show only Ethereum, Base, Arbitrum
                     if (currentChain === 'all' && !targetChains.includes(pool.chain)) return false;
                     
-                    // Must be stablecoin or stablecoin symbol
-                    const stableSymbols = ['USDC', 'USDT', 'USDB', 'DAI', 'TUSD', 'USDP', 'FRAX', 'USDD', 'MIM', 'UST', 'BUSD', 'sUSD', 'GHO', 'LUSD'];
-                    const isStableSymbol = stableSymbols.some(s => pool.symbol?.toUpperCase().includes(s));
+                    // Only USDC, USDT, USDe
+                    const stableSymbols = ['USDC', 'USDT', 'USDE'];
+                    const isStableSymbol = stableSymbols.some(s => pool.symbol?.toUpperCase() === s);
                     
                     if (!pool.stablecoin && !isStableSymbol) return false;
+                    
+                    // Exclude liquidity pools (Uniswap, Curve, etc.) - only single exposure
+                    const project = pool.project?.toLowerCase() || '';
+                    const lpKeywords = ['uniswap', 'curve', 'balancer', 'aerodrome', 'velodrome', 'pool', 'vault', 'lp'];
+                    const isLP = lpKeywords.some(kw => project.includes(kw) || pool.symbol?.toLowerCase().includes('DAI') === false && pool.symbol?.toLowerCase().includes('USDC') === false && pool.symbol?.toLowerCase().includes('USDT') === false && pool.symbol?.toLowerCase().includes('USDE') === false);
+                    
+                    // Include only lending protocols (single exposure, no IL)
+                    const lendingProtocols = ['aave', 'compound', 'morpho', 'yearn', 'spark', 'sky', 'ethena', 'lido', 'silo', 'gearbox', 'euler', 'maple', 'stader', 'swell', 'kelp', 'renzo', 'rocket', 'frax', 'sfrx'];
+                    const isLending = lendingProtocols.some(p => project.includes(p));
+                    
+                    if (!isLending && !pool.stablecoin) return false;
                     
                     // Must have positive APY
                     if (!pool.apy || pool.apy <= 0) return false;
