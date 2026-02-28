@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L2 Yield Finder - Best Stablecoin Yields</title>
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --card-bg: #1a1a23;
+            --text: #e8e8ed;
+            --text-muted: #8b8b9a;
+            --accent: #00d4aa;
+            --accent-hover: #00eabb;
+            --border: #2a2a3a;
+            --low: #22c55e;
+            --medium: #f59e0b;
+            --high: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent), #00a080);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .input-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1.125rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--accent);
+        }
+
+        .risk-toggle {
+            display: flex;
+            gap: 8px;
+            background: var(--bg);
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .risk-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .risk-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .risk-btn.active.low { background: var(--low); }
+        .risk-btn.active.medium { background: var(--medium); }
+        .risk-btn.active.high { background: var(--high); }
+
+        .filter-chips {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .chain-chip {
+            padding: 6px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chain-chip.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .results-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .results-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .yield-count {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .yield-table {
+            width: 100%;
+        }
+
+        .yield-row {
+            display: grid;
+            grid-template-columns: 1fr 80px 80px 100px 120px;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .yield-row:last-child {
+            border-bottom: none;
+        }
+
+        .yield-row:hover {
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        .yield-row.header {
+            background: var(--bg);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            padding: 12px 20px;
+        }
+
+        .protocol-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .protocol-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        .protocol-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .token-symbol {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .chain-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .chain-badge.base { background: #0052FF; color: white; }
+        .chain-badge.arbitrum { background: #28A0F0; color: white; }
+        .chain-badge.optimism { background: #FF0420; color: white; }
+        .chain-badge.ethereum { background: #627EEA; color: white; }
+
+        .apy-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .apy-value.high {
+            color: #22c55e;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .risk-badge.low { background: rgba(34, 197, 94, 0.15); color: var(--low); }
+        .risk-badge.medium { background: rgba(245, 158, 11, 0.15); color: var(--medium); }
+        .risk-badge.high { background: rgba(239, 68, 68, 0.15); color: var(--high); }
+
+        .deposit-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--accent);
+            color: var(--bg);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .deposit-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: help;
+            margin-left: 6px;
+        }
+
+        .tooltip::after {
+            content: '?';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--border);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            width: 200px;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-msg {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--high);
+        }
+
+        .est-yield {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(0, 160, 128, 0.1));
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .est-yield-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .est-yield-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .est-yield-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .disclaimer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 700px) {
+            .yield-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            
+            .yield-row.header {
+                display: none;
+            }
+            
+            .protocol-info {
+                grid-column: 1 / -1;
+            }
+            
+            .chain-badge {
+                font-size: 0.65rem;
+            }
+            
+            .apy-value {
+                font-size: 1.1rem;
+            }
+            
+            .deposit-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 L2 Yield Finder</h1>
+            <p class="tagline">Where should I put my stablecoins? We tell you.</p>
+        </header>
+
+        <div class="input-section">
+            <div class="input-row">
+                <div class="input-group">
+                    <label>💰 Amount to invest</label>
+                    <input type="number" id="amount" value="10000" min="100" placeholder="Enter amount">
+                </div>
+                <div class="input-group">
+                    <label>⚠️ Risk tolerance</label>
+                    <div class="risk-toggle">
+                        <button class="risk-btn low active" data-risk="low">Low</button>
+                        <button class="risk-btn medium" data-risk="medium">Medium</button>
+                        <button class="risk-btn high" data-risk="high">High</button>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-chains">
+                <div class="filter-chips">
+                    <span class="chain-chip active" data-chain="all">All Chains</span>
+                    <span class="chain-chip" data-chain="Base">Base</span>
+                    <span class="chain-chip" data-chain="Arbitrum">Arbitrum</span>
+                    <span class="chain-chip" data-chain="Optimism">Optimism</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="est-yield" id="estYield" style="display: none;">
+            <div class="est-yield-label">Your estimated yearly earnings</div>
+            <div class="est-yield-value" id="estYieldValue">$0</div>
+            <div class="est-yield-sub" id="estYieldSub">Based on top yield</div>
+        </div>
+
+        <div class="results-section">
+            <div class="results-header">
+                <h2>📊 Top Yields</h2>
+                <span class="yield-count" id="yieldCount">Loading...</span>
+            </div>
+            <div class="yield-table" id="yieldTable">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Fetching latest yields...
+                </div>
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            ⚠️ DeFi involves risk. Yields are variable and can change. Always do your own research before investing.
+        </div>
+    </div>
+
+    <script>
+        // State
+        let allPools = [];
+        let currentRisk = 'low';
+        let currentChain = 'all';
+        let amount = 10000;
+
+        // Protocol metadata
+        const protocolInfo = {
+            'aave-v3': { name: 'Aave', url: 'https://app.aave.com', risk: { tvl: 1000, score: 0.1 } },
+            'morpho-v1': { name: 'Morpho', url: 'https://app.morpho.org', risk: { tvl: 500, score: 0.2 } },
+            'morpho-blue': { name: 'Morpho Blue', url: 'https://blue.morpho.org', risk: { tvl: 200, score: 0.35 } },
+            'compound': { name: 'Compound', url: 'https://app.compound.finance', risk: { tvl: 1000, score: 0.1 } },
+            'uniswap': { name: 'Uniswap', url: 'https://app.uniswap.org', risk: { tvl: 1000, score: 0.2 } },
+            'curve': { name: 'Curve', url: 'https://curve.fi', risk: { tvl: 1000, score: 0.15 } },
+            'yearn': { name: 'Yearn', url: 'https://yearn.finance', risk: { tvl: 800, score: 0.2 } },
+            'synthetix': { name: 'Synthetix', url: 'https://synthetix.io', risk: { tvl: 500, score: 0.25 } },
+            'lido': { name: 'Lido', url: 'https://stake.lido.fi', risk: { tvl: 1000, score: 0.1 } },
+            'gearbox': { name: 'Gearbox', url: 'https://app.gearbox.fi', risk: { tvl: 200, score: 0.35 } },
+            'euler': { name: 'Euler', url: 'https://app.euler.finance', risk: { tvl: 100, score: 0.4 } },
+            'silo': { name: 'Silo', url: 'https://app.silo.finance', risk: { tvl: 100, score: 0.35 } },
+            'sparklend': { name: 'Spark', url: 'https://app.spark.fi', risk: { tvl: 500, score: 0.15 } },
+            'sky-lending': { name: 'Sky', url: 'https://sky.money', risk: { tvl: 500, score: 0.15 } },
+            'ethena-usde': { name: 'Ethena', url: 'https://app.ethena.fi', risk: { tvl: 500, score: 0.25 } },
+            'maple': { name: 'Maple', url: 'https://app.maple.finance', risk: { tvl: 300, score: 0.3 } },
+            'aerodrome': { name: 'Aerodrome', url: 'https://aerodrome.finance', risk: { tvl: 300, score: 0.2 } },
+            'velodrome': { name: 'Velodrome', url: 'https://app.velodrome.finance', risk: { tvl: 300, score: 0.2 } },
+            'balancer': { name: 'Balancer', url: 'https://app.balancer.fi', risk: { tvl: 500, score: 0.2 } },
+            'sfrxeth': { name: 'sfrxETH', url: 'https://www.fraxfinance.com/staking', risk: { tvl: 300, score: 0.2 } },
+            'frax-ether': { name: 'Frax Ether', url: 'https://app.frax.finance', risk: { tvl: 300, score: 0.2 } },
+            'rocket-pool': { name: 'Rocket Pool', url: 'https://stake.rocketpool.net', risk: { tvl: 800, score: 0.12 } },
+            'ether-fi': { name: 'Ether.fi', url: 'https://ether.fi/staking', risk: { tvl: 500, score: 0.2 } },
+            'kelp': { name: 'Kelp', url: 'https://www.kelpdao.xyz', risk: { tvl: 200, score: 0.25 } },
+            'renzo': { name: 'Renzo', url: 'https://app.renzo.io', risk: { tvl: 300, score: 0.25 } },
+            'swell': { name: 'Swell', url: 'https://swellnetwork.io/staking', risk: { tvl: 100, score: 0.35 } },
+            'stader': { name: 'Stader', url: 'https://staderlabs.com/eth', risk: { tvl: 300, score: 0.2 } },
+            'bitcoin-asset': { name: 'Bitcoin', url: '#', risk: { tvl: 500, score: 0.2 } },
+        };
+
+        const riskTooltips = {
+            low: 'Low risk: Large TVL, audited protocols, established track record',
+            medium: 'Medium risk: Moderate TVL, newer protocols, some audits',
+            high: 'High risk: Lower TVL, experimental, higher smart contract risk'
+        };
+
+        // Get risk level based on TVL and protocol
+        function getRiskLevel(pool) {
+            const tvlLog = Math.log10(pool.tvlUsd || 1);
+            const project = protocolInfo[pool.project];
+            
+            // Base risk on TVL
+            let riskScore = Math.max(0, 1 - tvlLog / 10);
+            
+            // Adjust by protocol known risk
+            if (project?.risk?.score) {
+                riskScore = (riskScore + project.risk.score) / 2;
+            }
+            
+            // Stablecoins get a slight boost
+            if (pool.stablecoin) {
+                riskScore -= 0.1;
+            }
+            
+            if (riskScore < 0.25) return 'low';
+            if (riskScore < 0.45) return 'medium';
+            return 'high';
+        }
+
+        // Fetch data
+        async function fetchYields() {
+            try {
+                const response = await fetch('https://yields.llama.fi/pools');
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    allPools = data.data;
+                    renderYields();
+                } else {
+                    throw new Error('API returned error');
+                }
+            } catch (error) {
+                document.getElementById('yieldTable').innerHTML = `
+                    <div class="error-msg">
+                        Failed to load yields. Please refresh the page.
+                    </div>
+                `;
+            }
+        }
+
+        // Filter pools for L2 stablecoins
+        function getFilteredPools() {
+            const targetChains = ['Base', 'Arbitrum', 'Optimism'];
+            
+            return allPools
+                .filter(pool => {
+                    // Filter by chain
+                    if (currentChain !== 'all' && pool.chain !== currentChain) return false;
+                    
+                    // For 'all' show L2s only
+                    if (currentChain === 'all' && !targetChains.includes(pool.chain)) return false;
+                    
+                    // Must be stablecoin or stablecoin symbol
+                    const stableSymbols = ['USDC', 'USDT', 'USDB', 'DAI', 'TUSD', 'USDP', 'FRAX', 'USDD', 'MIM', 'UST', 'BUSD', 'sUSD', 'GHO', 'LUSD'];
+                    const isStableSymbol = stableSymbols.some(s => pool.symbol?.toUpperCase().includes(s));
+                    
+                    if (!pool.stablecoin && !isStableSymbol) return false;
+                    
+                    // Must have positive APY
+                    if (!pool.apy || pool.apy <= 0) return false;
+                    
+                    return true;
+                })
+                .map(pool => ({
+                    ...pool,
+                    risk: getRiskLevel(pool)
+                }))
+                .filter(pool => {
+                    // Filter by risk
+                    if (currentRisk === 'low' && pool.risk !== 'low') return false;
+                    if (currentRisk === 'medium' && pool.risk === 'high') return false;
+                    // High shows all
+                    return true;
+                })
+                .sort((a, b) => b.apy - a.apy)
+                .slice(0, 15);
+        }
+
+        // Render yields
+        function renderYields() {
+            const pools = getFilteredPools();
+            const table = document.getElementById('yieldTable');
+            
+            if (pools.length === 0) {
+                table.innerHTML = `
+                    <div class="error-msg">
+                        No yields found for current filters. Try adjusting your risk tolerance.
+                    </div>
+                `;
+                document.getElementById('yieldCount').textContent = '0 results';
+                document.getElementById('estYield').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('yieldCount').textContent = `${pools.length} opportunities`;
+
+            // Show estimated yield
+            const topPool = pools[0];
+            if (topPool) {
+                const yearlyEarnings = (amount * topPool.apy) / 100;
+                document.getElementById('estYieldValue').textContent = 
+                    `$${yearlyEarnings.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+                document.getElementById('estYieldSub').textContent = 
+                    `at ${topPool.apy.toFixed(2)}% APY with ${getProtocolName(topPool.project)}`;
+                document.getElementById('estYield').style.display = 'block';
+            }
+
+            let html = `
+                <div class="yield-row header">
+                    <div>Protocol</div>
+                    <div>Chain</div>
+                    <div>APY</div>
+                    <div>Risk</div>
+                    <div>Action</div>
+                </div>
+            `;
+
+            pools.forEach((pool, index) => {
+                const protocol = protocolInfo[pool.project] || { name: pool.project, url: '#' };
+                
+                html += `
+                    <div class="yield-row">
+                        <div class="protocol-info">
+                            <div class="protocol-icon">${getProtocolName(pool.project).charAt(0)}</div>
+                            <div>
+                                <div class="protocol-name">
+                                    ${getProtocolName(pool.project)}
+                                    <span class="tooltip">
+                                        <span class="tooltip-text">${pool.project} on ${pool.chain}</span>
+                                    </span>
+                                </div>
+                                <div class="token-symbol">${pool.symbol}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="chain-badge ${pool.chain.toLowerCase()}">${pool.chain}</span>
+                        </div>
+                        <div>
+                            <span class="apy-value ${pool.apy > 5 ? 'high' : ''}">${pool.apy.toFixed(2)}%</span>
+                        </div>
+                        <div>
+                            <span class="risk-badge ${pool.risk}">${pool.risk}</span>
+                        </div>
+                        <a href="${protocol.url}" target="_blank" rel="noopener" class="deposit-btn">
+                            Deposit →
+                        </a>
+                    </div>
+                `;
+            });
+
+            table.innerHTML = html;
+        }
+
+        function getProtocolName(project) {
+            return protocolInfo[project]?.name || project.split('-').map(w => 
+                w.charAt(0).toUpperCase() + w.slice(1)
+            ).join(' ');
+        }
+
+        // Event listeners
+        document.querySelectorAll('.risk-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.risk-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentRisk = btn.dataset.risk;
+                renderYields();
+            });
+        });
+
+        document.querySelectorAll('.chain-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.chain-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                currentChain = chip.dataset.chain;
+                renderYields();
+            });
+        });
+
+        document.getElementById('amount').addEventListener('input', (e) => {
+            amount = parseFloat(e.target.value) || 0;
+            renderYields();
+        });
+
+        // Initial load
+        fetchYields();
+    </script>
+</body>
+</html>
